@@ -55,6 +55,13 @@ dependencies {
 	testImplementation 'org.testcontainers:testcontainers:1.20.4'
 	testImplementation 'org.testcontainers:junit-jupiter:1.20.4'
 	testImplementation "org.testcontainers:mysql:1.17.2"
+
+	// webSocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// rabbitMQ
+	implementation "org.springframework.boot:spring-boot-starter-reactor-netty"
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 }
 
 tasks.named('test') {
