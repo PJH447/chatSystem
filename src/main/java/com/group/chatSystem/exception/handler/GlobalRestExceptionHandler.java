@@ -1,6 +1,9 @@
 package com.group.chatSystem.exception.handler;
 
+import com.group.chatSystem.exception.BadRequestException;
+import com.group.chatSystem.exception.DuplicateException;
 import com.group.chatSystem.exception.NotFoundRefreshTokenException;
+import com.group.chatSystem.exception.ResultNotFoundException;
 import com.group.chatSystem.web.common.dto.CommonResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,27 @@ public class GlobalRestExceptionHandler {
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = NotFoundRefreshTokenException.class)
     public CommonResponse handleNotFoundRefreshTokenException(HttpServletRequest req, NotFoundRefreshTokenException e) {
+        warningLogging(req, e, false);
+        return CommonResponse.createErrorResponse(e);
+    }
+
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = ResultNotFoundException.class)
+    public CommonResponse handleResultNotFoundException(HttpServletRequest req, ResultNotFoundException e) {
+        warningLogging(req, e, false);
+        return CommonResponse.createErrorResponse(e);
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = {DuplicateException.class})
+    public CommonResponse handleDuplicateException(HttpServletRequest req, RuntimeException e) {
+        warningLogging(req, e, false);
+        return CommonResponse.createErrorResponse(e);
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = {BadRequestException.class})
+    public CommonResponse handleBadRequestException(HttpServletRequest req, RuntimeException e) {
         warningLogging(req, e, false);
         return CommonResponse.createErrorResponse(e);
     }
