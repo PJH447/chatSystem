@@ -7,9 +7,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.util.Set;
 
+@Builder
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Entity
+@Table(name = "user", indexes = {})
 public class User extends BaseEntity {
 
     private static final long serialVersionUID = 142151L;
