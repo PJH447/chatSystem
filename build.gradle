@@ -66,6 +66,9 @@ dependencies {
 	// json
 	implementation 'org.json:json:20231013'
 	implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.8.3'
+
+	// redisson
+	implementation 'org.redisson:redisson-spring-boot-starter:3.23.0'
 }
 
 tasks.named('test') {
