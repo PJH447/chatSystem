@@ -71,6 +71,22 @@ public class AuthServiceImpl implements AuthService {
         this.issueToken(response, user);
     }
 
+    @Override
+    public void logout(final HttpServletRequest request, final HttpServletResponse response) {
+
+        this.deleteAccessToken(response);
+        this.deleteRefreshToken(response);
+
+        this.getCookie(request, REFRESH_TOKEN_COOKIE_KEY)
+            .map(Cookie::getValue)
+            .ifPresent(refreshToken -> {
+                String email = jwtTokenProvider.getSubjectByToken(refreshToken);
+                User user = userRepository.findByEmailAndEnabledIsTrue(email)
+                                          .orElseThrow(RuntimeException::new);
+                cacheTokenRepository.deleteData(REFRESH_TOKEN_CACHE_PREFIX + user.getId());
+            });
+    }
+
     private void issueToken(final HttpServletResponse response, final User user) {
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         this.setAccessToken(accessToken, response);
@@ -110,5 +126,27 @@ public class AuthServiceImpl implements AuthService {
         return Arrays.stream(cookies)
                      .filter(cookie -> cookie.getName().equals(name))
                      .findAny();
+    }
+
+    private void deleteAccessToken(final HttpServletResponse response) {
+        ResponseCookie responseCookie = ResponseCookie.from(ACCESS_TOKEN_COOKIE_KEY, null)
+                                                      .path("/")
+                                                      .maxAge(0)
+                                                      .httpOnly(true)
+                                                      .secure(true)
+                                                      .sameSite("None")
+                                                      .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+    }
+
+    private void deleteRefreshToken(final HttpServletResponse response) {
+        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_KEY, null)
+                                                      .path("/")
+                                                      .maxAge(0)
+                                                      .httpOnly(true)
+                                                      .secure(true)
+                                                      .sameSite("None")
+                                                      .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
 }

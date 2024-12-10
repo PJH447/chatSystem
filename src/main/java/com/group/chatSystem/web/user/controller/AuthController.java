@@ -38,4 +38,14 @@ public class AuthController {
         return CommonResponse.createVoidResponse();
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/v1/logout")
+    public CommonResponse logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        authService.logout(request, response);
+        return CommonResponse.createVoidResponse();
+    }
+
 }

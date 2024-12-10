@@ -8,4 +8,5 @@ public interface AuthService {
 
     void login(LoginForm loginForm, HttpServletResponse response);
     void reissueAccessToken(HttpServletRequest request, HttpServletResponse response);
+    void logout(final HttpServletRequest request, final HttpServletResponse response);
 }
