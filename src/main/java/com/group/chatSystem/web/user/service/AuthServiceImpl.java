@@ -1,10 +1,13 @@
 package com.group.chatSystem.web.user.service;
 
 import com.group.chatSystem.config.security.JwtTokenProvider;
+import com.group.chatSystem.exception.NotFoundRefreshTokenException;
 import com.group.chatSystem.web.common.repository.CacheTokenRepository;
 import com.group.chatSystem.web.user.domain.User;
 import com.group.chatSystem.web.user.dto.LoginForm;
 import com.group.chatSystem.web.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +16,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -47,6 +53,24 @@ public class AuthServiceImpl implements AuthService {
         this.issueToken(response, user);
     }
 
+    @Override
+    public void reissueAccessToken(final HttpServletRequest request, final HttpServletResponse response) {
+        String refreshToken = this.getCookie(request, REFRESH_TOKEN_COOKIE_KEY)
+                                  .map(Cookie::getValue)
+                                  .orElseThrow(() -> new NotFoundRefreshTokenException("refresh token 이 존재하지 않습니다."));
+
+        String email = jwtTokenProvider.getSubjectByToken(refreshToken);
+        User user = userRepository.findByEmailAndEnabledIsTrue(email)
+                                  .orElseThrow(RuntimeException::new);
+
+        String _refreshToken = cacheTokenRepository.getData(REFRESH_TOKEN_CACHE_PREFIX + user.getId());
+        if (!refreshToken.equals(_refreshToken)) {
+            throw new NotFoundRefreshTokenException("올바른 토큰이 아닙니다.");
+        }
+
+        this.issueToken(response, user);
+    }
+
     private void issueToken(final HttpServletResponse response, final User user) {
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         this.setAccessToken(accessToken, response);
@@ -76,5 +100,15 @@ public class AuthServiceImpl implements AuthService {
                                                       .sameSite("None")
                                                       .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+    }
+
+    private Optional<Cookie> getCookie(final HttpServletRequest request, final String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length == 0)
+            return Optional.empty();
+
+        return Arrays.stream(cookies)
+                     .filter(cookie -> cookie.getName().equals(name))
+                     .findAny();
     }
 }

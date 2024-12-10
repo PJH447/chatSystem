@@ -3,6 +3,7 @@ package com.group.chatSystem.web.user.controller;
 import com.group.chatSystem.web.common.dto.CommonResponse;
 import com.group.chatSystem.web.user.dto.LoginForm;
 import com.group.chatSystem.web.user.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,16 @@ public class AuthController {
     ) {
         authService.login(loginForm, response);
         return createVoidResponse();
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/v1/reissue")
+    public CommonResponse reissueAccessToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        authService.reissueAccessToken(request, response);
+        return CommonResponse.createVoidResponse();
     }
 
 }
