@@ -21,4 +21,18 @@ public class UserRestController {
         return CommonResponse.createVoidResponse();
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/v1/nickname")
+    public CommonResponse existSameNickname(@RequestParam(value = "nickname") String nickname) {
+        boolean existSameNickname = userService.existSameNickname(nickname);
+        return CommonResponse.createResponse(existSameNickname);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/v1/email")
+    public CommonResponse existSameEmail(@RequestParam(value = "email") String email) {
+        boolean existSameEmail = userService.existSameEmail(email);
+        return CommonResponse.createResponse(existSameEmail);
+    }
+
 }

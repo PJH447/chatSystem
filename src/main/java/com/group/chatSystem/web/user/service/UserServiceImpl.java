@@ -38,4 +38,14 @@ public class UserServiceImpl implements UserService {
         User _user = userRepository.save(user);
     }
 
+    @Override
+    public boolean existSameNickname(final String nickname) {
+        return userRepository.findByNicknameAndEnabledIsTrue(nickname).isPresent();
+    }
+
+    @Override
+    public boolean existSameEmail(final String email) {
+        return userRepository.findByEmailAndEnabledIsTrue(email).isPresent();
+    }
+
 }
