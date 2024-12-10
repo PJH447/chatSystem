@@ -63,4 +63,16 @@ public class User extends BaseEntity {
     public void initRole(Role role) {
         this.roles = new HashSet<>(Collections.singletonList(role));
     }
+
+    public void editPassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void editNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void editPhone(String phone) {
+        this.phone = phone;
+    }
 }

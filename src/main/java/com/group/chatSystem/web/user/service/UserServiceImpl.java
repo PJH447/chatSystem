@@ -1,7 +1,12 @@
 package com.group.chatSystem.web.user.service;
 
+import com.group.chatSystem.exception.BadRequestException;
+import com.group.chatSystem.exception.DuplicateException;
+import com.group.chatSystem.exception.ResultNotFoundException;
 import com.group.chatSystem.web.user.domain.Role;
 import com.group.chatSystem.web.user.domain.User;
+import com.group.chatSystem.web.user.dto.EditInfoForm;
+import com.group.chatSystem.web.user.dto.EditPasswordForm;
 import com.group.chatSystem.web.user.dto.SignUpForm;
 import com.group.chatSystem.web.user.repository.RoleRepository;
 import com.group.chatSystem.web.user.repository.UserRepository;
@@ -10,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -46,6 +53,46 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existSameEmail(final String email) {
         return userRepository.findByEmailAndEnabledIsTrue(email).isPresent();
+    }
+
+    @Transactional
+    @Override
+    public void editNickname(final Long userId, final EditInfoForm editInfoForm) {
+        Optional<User> userByNickname = userRepository.findByNicknameAndEnabledIsTrue(editInfoForm.nickname());
+        if (userByNickname.isPresent()) {
+            throw new DuplicateException("동일 닉네임 유저가 존재합니다.");
+        }
+
+        Optional<User> userByPhone = userRepository.findByPhoneAndEnabledIsTrue(editInfoForm.phone());
+        if (userByPhone.isPresent()) {
+            throw new DuplicateException("동일 전화번호 유저가 존재합니다.");
+        }
+
+        User user = getUser(userId);
+        user.editNickname(editInfoForm.nickname());
+        user.editPhone(editInfoForm.phone());
+        userRepository.save(user);
+    }
+
+    @Transactional
+    @Override
+    public void editPassword(final Long userId, final EditPasswordForm editPasswordForm) {
+        User user = getUser(userId);
+        String password = user.getPassword();
+        boolean matches = bCryptPasswordEncoder.matches(editPasswordForm.password(), password);
+
+        if (!matches) {
+            throw new BadRequestException("비밀번호가 틀렸습니다.");
+        }
+
+        user.editPassword(bCryptPasswordEncoder.encode(editPasswordForm.newPassword()));
+
+        userRepository.save(user);
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                             .orElseThrow(()-> new ResultNotFoundException("user 가 존재하지 않습니다."));
     }
 
 }
