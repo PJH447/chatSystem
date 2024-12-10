@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 @Builder
@@ -57,4 +59,8 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    public void initRole(Role role) {
+        this.roles = new HashSet<>(Collections.singletonList(role));
+    }
 }
