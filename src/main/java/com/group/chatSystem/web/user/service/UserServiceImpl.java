@@ -31,6 +31,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void signUp(final SignUpForm signUpForm) {
+        this.validateDuplicateEmail(signUpForm.email());
+        this.validateDuplicateNickname(signUpForm.nickname());
+        this.validateDuplicatePhone(signUpForm.phone());
         User user = User.builder()
                         .email(signUpForm.email())
                         .phone(signUpForm.phone())
@@ -58,15 +61,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void editNickname(final Long userId, final EditInfoForm editInfoForm) {
-        Optional<User> userByNickname = userRepository.findByNicknameAndEnabledIsTrue(editInfoForm.nickname());
-        if (userByNickname.isPresent()) {
-            throw new DuplicateException("동일 닉네임 유저가 존재합니다.");
-        }
-
-        Optional<User> userByPhone = userRepository.findByPhoneAndEnabledIsTrue(editInfoForm.phone());
-        if (userByPhone.isPresent()) {
-            throw new DuplicateException("동일 전화번호 유저가 존재합니다.");
-        }
+        this.validateDuplicateNickname(editInfoForm.nickname());
+        this.validateDuplicatePhone(editInfoForm.phone());
 
         User user = getUser(userId);
         user.editNickname(editInfoForm.nickname());
@@ -93,6 +89,24 @@ public class UserServiceImpl implements UserService {
     private User getUser(Long userId) {
         return userRepository.findById(userId)
                              .orElseThrow(()-> new ResultNotFoundException("user 가 존재하지 않습니다."));
+    }
+    private void validateDuplicateEmail(final String email) {
+        if (this.existSameEmail(email)) {
+            throw new DuplicateException("동일 email 유저가 존재합니다.");
+        }
+    }
+
+    private void validateDuplicateNickname(final String nickname) {
+        if (this.existSameNickname(nickname)) {
+            throw new DuplicateException("동일 닉네임 유저가 존재합니다.");
+        }
+    }
+
+    private void validateDuplicatePhone(final String phone) {
+        Optional<User> userByPhone = userRepository.findByPhoneAndEnabledIsTrue(phone);
+        if (userByPhone.isPresent()) {
+            throw new DuplicateException("동일 전화번호 유저가 존재합니다.");
+        }
     }
 
 }
