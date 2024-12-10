@@ -30,4 +30,9 @@ public class Chat extends BaseEntity {
     @JoinColumn(name = "target_user_id")
     private User targetUser;
 
+    public void validateEmptyMessage() {
+        if (this.message.isBlank()) {
+            throw new RuntimeException("메세지가 비어있음");
+        }
+    }
 }

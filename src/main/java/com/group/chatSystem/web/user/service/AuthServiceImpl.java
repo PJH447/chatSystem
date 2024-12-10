@@ -72,6 +72,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void setAuthorizationHeader(final HttpServletRequest request, final HttpServletResponse response) {
+        String accessToken = jwtTokenProvider.resolveToken(request);
+        response.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+    }
+
+    @Override
     public void logout(final HttpServletRequest request, final HttpServletResponse response) {
 
         this.deleteAccessToken(response);
